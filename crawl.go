@@ -1,8 +1,11 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/moovweb/gokogiri"
+	"github.com/moovweb/gokogiri/xpath"
 	"github.com/mozillazg/request"
 	"net"
 	"net/http"
@@ -31,6 +34,21 @@ func GetProxy() string {
 		}
 	}
 	return ""
+}
+
+func ParsePage(page []byte) (map[string]interface{}, error) {
+	ret := make(map[string]interface{})
+	doc, err := gokogiri.ParseHtml(page)
+	if err != nil {
+		fmt.Println(err)
+		return ret, errors.New("Failed to parse page")
+	}
+	defer doc.Free()
+	sectionXpath := xpath.Compile("//ul[contains(concat(' ', @class ,' '), ' slist ')]/li/a[1]")
+	if sectionXpath != nil {
+		defer sectionXpath.Free()
+	}
+	return ret, nil
 }
 
 func main() {
