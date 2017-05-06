@@ -1,7 +1,17 @@
 package downloader
 
 import (
-	"http"
+	"bytes"
+	"compress/gzip"
+	"compress/zlib"
+	"crypto/tls"
+	"fmt"
+	"github.com/axgle/mahonia"
+	"io"
+	"net/http"
+	"net/url"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -27,7 +37,99 @@ func Download(requestInfo *RequestInfo) *ResponseInfo {
 	if requestInfo.UseProxy {
 		var proxy string
 		var err error
-
+		if len(requestInfo.Proxy) > 0 {
+			proxy = requestInfo.Proxy
+		} else {
+			proxy, err = GetProxy()
+			if err != nil {
+				responseInfo.Error = &DownloaderError{1, err.Error()}
+				return responseInfo
+			}
+		}
+		responseInfo.Proxy = proxy
+		urlProxy, err := url.Parse(proxy)
+		if err != nil {
+			responseInfo.Error = &DownloaderError{1, fmt.Sprintf("failed to parse proxy: %s", proxy)}
+			return responseInfo
+		}
+		transport.Proxy = http.ProxyURL(urlProxy)
 	}
-	return nil
+
+	client.Transport = &transport
+
+	req, err := http.NewRequest(requestInfo.Method, requestInfo.Url, strings.NewReader(requestInfo.PostData))
+	if err != nil {
+		responseInfo.Error = &DownloaderError{1, fmt.Sprintf("failed to create http request: %s", err.Error())}
+		return responseInfo
+	}
+	var resp *http.Response
+	resp, err = client.Do(req)
+	if err != nil {
+		responseInfo.Error = &DownloaderError{2, err.Error()}
+		return responseInfo
+	}
+
+	responseInfo.StatusCode = resp.StatusCode
+	defer resp.Body.Close()
+
+	var contentLen int64
+	contentLen, err = strconv.ParseInt(resp.Header.Get("content-length"), 10, 64)
+	if err != nil {
+		//
+	} else if requestInfo.MaxLen > 0 && contentLen > requestInfo.MaxLen {
+		responseInfo.Error = &DownloaderError{2, "reponse size too large"}
+		return responseInfo
+	}
+
+	var reader io.ReadCloser
+	switch resp.Header.Get("Content-Encoding") {
+	case "gzip":
+		if reader, err = gzip.NewReader(resp.Body); err != nil {
+			responseInfo.Error = &DownloaderError{2, err.Error()}
+			return responseInfo
+		}
+		defer reader.Close()
+	case "deflate":
+		if reader, err = zlib.NewReader(resp.Body); err != nil {
+			responseInfo.Error = &DownloaderError{2, err.Error()}
+			return responseInfo
+		}
+		defer reader.Close()
+	default:
+		reader = resp.Body
+	}
+
+	var readLen int64 = 0
+	respBuf := bytes.NewBuffer([]byte{})
+	for {
+		readData := make([]byte, 4096)
+		length, err := reader.Read(readData)
+		respBuf.Write(readData[:length])
+		readLen += int64(length)
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			responseInfo.Error = &DownloaderError{2, "reponse size too large - count"}
+			return responseInfo
+		}
+	}
+	responseInfo.Content = respBuf.Bytes()
+	var encoding string
+	encoding, err = GuessEncoding(responseInfo.Content)
+	if err != nil {
+		//
+		responseInfo.Text = string(responseInfo.Content)
+		responseInfo.Encoding = ""
+		return responseInfo
+	}
+	encoder := mahonia.NewDecoder(encoding)
+	if encoder == nil {
+		responseInfo.Text = string(responseInfo.Content)
+		responseInfo.Encoding = ""
+		return responseInfo
+	}
+	responseInfo.Text = encoder.ConvertString(string(responseInfo.Content))
+	responseInfo.Encoding = encoding
+	return responseInfo
 }

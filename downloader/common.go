@@ -3,16 +3,14 @@ package downloader
 import "fmt"
 
 type RequestInfo struct {
-	Url       string
-	Method    string
-	PostData  string
-	UseProxy  bool
-	NeedLogin bool
-	Proxy     string
-	Cookies   map[string]string
-	Timeout   int
-	MaxLen    int64
-	Platform  string
+	Url      string
+	Method   string
+	PostData string
+	UseProxy bool
+	Proxy    string
+	Timeout  int
+	MaxLen   int64
+	Platform string
 }
 
 func (req *RequestInfo) String() string {
