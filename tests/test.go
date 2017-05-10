@@ -7,7 +7,8 @@ import (
 
 func main() {
 	requestInfo := &downloader.RequestInfo{
-		Url:      "http://m.newsmth.net",
+		Url: "http://m.newsmth.net",
+		//Url:      "http://www.newsmth.net",
 		Method:   "GET",
 		UseProxy: false,
 		Platform: "mobile",
