@@ -34,3 +34,25 @@ func TestParse(t *testing.T) {
 	t.Log("retUrls json: ", string(jsonUrls))
 	t.Log("retItems json: ", string(jsonItems))
 }
+
+func TestParse2(t *testing.T) {
+	page, _ := ioutil.ReadFile("./jrwen.html")
+	conf, _ := ioutil.ReadFile("./baidu.json")
+	pageUrl := "https://www.baidu.com/s?wd=%E6%96%87%E7%BB%A7%E8%8D%A3"
+
+	var urlConf ParseConf
+	err := json.Unmarshal(conf, &urlConf)
+	if err != nil {
+		t.Error(err)
+	}
+	retUrls, retItems, err := Parse(string(page), pageUrl, urlConf)
+	if err != nil {
+		t.Error(err)
+	}
+	//t.Log("retUrls: ", retUrls)
+	//t.Log("retItems: ", retItems)
+	jsonUrls, _ := json.Marshal(retUrls)
+	jsonItems, _ := json.Marshal(retItems)
+	t.Log("retUrls json: ", string(jsonUrls))
+	t.Log("retItems json: ", string(jsonItems))
+}

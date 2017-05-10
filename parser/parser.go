@@ -42,11 +42,9 @@ func parseDOMRule(node interface{}, confRule ConfRule, pageUrl string) ([]interf
 	var err error = nil
 	switch node.(type) {
 	case *html.HtmlDocument:
-		domNode := node.(*html.HtmlDocument)
-		nodes, err = domNode.Search(nodeXpath)
+		nodes, err = node.(*html.HtmlDocument).Search(nodeXpath)
 	case *xml.ElementNode:
-		domNode := node.(*xml.ElementNode)
-		nodes, err = domNode.Search(nodeXpath)
+		nodes, err = node.(*xml.ElementNode).Search(nodeXpath)
 	default:
 		err = errors.New("node type neither html.HtmlDocument nor xml.ElementNode")
 	}
@@ -153,7 +151,6 @@ func Parse(page, pageUrl string, conf ParseConf) ([]ParsedTask, []ParsedItem, er
 	if conf == nil {
 		return nil, nil, errors.New("parse conf is nil")
 	}
-
 	if len(page) == 0 {
 		return nil, nil, errors.New("page len is 0")
 	}
@@ -169,7 +166,7 @@ func Parse(page, pageUrl string, conf ParseConf) ([]ParsedTask, []ParsedItem, er
 	domList = append(domList, rootDOMNode)
 
 	for {
-		if len(domList) == 0 { // no more dom to process
+		if len(domList) == 0 { // no more dom to be processed
 			break
 		}
 		domName := domList[0].Name

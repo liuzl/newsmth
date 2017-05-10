@@ -1,0 +1,26 @@
+{
+  "related": [
+    {
+      "xpath": "./@href",
+      "name": "NewSearch",
+      "type": "url"
+    },
+    {
+      "xpath": "./text()",
+      "name": "word",
+      "type": "string"
+    }
+  ],
+  "root": [
+    {
+      "xpath": "//div[@id='rs']//a",
+      "name": "related",
+      "type": "dom"
+    },
+    {
+      "xpath": "//title/text()",
+      "name": "title",
+      "type": "string"
+    }
+  ]
+}
