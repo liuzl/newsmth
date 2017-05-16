@@ -2,27 +2,41 @@ package main
 
 import (
 	"fmt"
+	"github.com/liuzl/newsmth/parser"
 	"github.com/robertkrimen/otto"
+	"io/ioutil"
+	"log"
 )
 
 func main() {
-	vm := otto.New()
-	vm.Run(`
-	    abc = 2 + 2;
-		console.log("The value of abc is " + abc); // 4
-	`)
-	if value, err := vm.Get("abc"); err == nil {
-		if value_int, err := value.ToInteger(); err == nil {
-			fmt.Println(value_int, err)
-		}
+	runtime := loadJsFromFile("test.js")
+	if runtime == nil {
+		log.Fatal("loadJsFrom File error")
 	}
-	vm.Set("def", 11)
-	vm.Run(`
-	    console.log("The value of def is " + def);
-		// The value of def is 11
-	`)
-	vm.Set("xyzzy", "Nothing happens.")
-	vm.Run(`
-	    console.log(xyzzy.length); // 16
-	`)
+
+	r := new(parser.ConfRule)
+	r.Type = "haha"
+	v, err := runtime.ToValue(r)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	result, err := runtime.Call("process", nil, v)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(result)
+	fmt.Println(r)
+}
+
+func loadJsFromFile(name string) *otto.Otto {
+	js, err := ioutil.ReadFile(name)
+	if err != nil {
+		log.Fatal(err)
+	}
+	runtime := otto.New()
+	if _, err := runtime.Run(js); err != nil {
+		log.Fatal(err)
+	}
+	return runtime
 }
