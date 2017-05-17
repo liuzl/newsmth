@@ -39,14 +39,14 @@
         {
           "type": "dom",
           "name": "posts",
-          "xpath": "//table[contains(concat(' ', @class, ' '), ' article')]"
+          "xpath": "//table[contains(concat(' ', @class, ' '), ' article ')]"
         }
       ],
       "posts": [
         {
           "type": "string",
           "name": "content",
-          "xpath": ".//td[contains(concat(' ', @class, ' '), 'a-content')]"
+          "xpath": ".//td[contains(concat(' ', @class, ' '), ' a-content ')]"
         }
       ]
     }
