@@ -5,6 +5,7 @@ type ConfRule struct {
 	Name  string `json:"name" bson:"name"`
 	Xpath string `json:"xpath" bson:"xpath"`
 	Regex string `json:"regex" bson:"regex"`
+	//Js    string `json:"js" bson:"js"`
 }
 
 type ParseConf map[string][]ConfRule
