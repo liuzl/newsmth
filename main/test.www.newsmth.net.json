@@ -1,0 +1,59 @@
+{
+  "crawler_type": "focus",
+  "parse_confs": {
+    "start": {
+      "root": [
+        {
+          "type": "url",
+          "name": "start",
+          "xpath": "//tr[contains(td[2]/text(),'[二级目录]')]/td[1]/a/@href"
+        },
+        {
+          "type": "url",
+          "name": "board",
+          "xpath": "//tr[not(contains(td[2]/text(),'[二级目录]'))]/td[1]/a/@href"
+        }
+      ]
+    },
+    "board": {
+      "root": [
+        {
+          "type": "url",
+          "name": "article",
+          "xpath": "//tr/td[2]/a/@href"
+        },
+        {
+          "type": "url",
+          "name": "board",
+          "xpath": "//div[@class='t-pre']//li[@class='page-select']/following-sibling::li[1]/a/@href"
+        }
+      ]
+    },
+    "article": {
+      "root": [
+        {
+          "type": "url",
+          "name": "article",
+          "xpath": "//div[@class='t-pre']//li[@class='page-select']/following-sibling::li[1]/a/@href"
+        },
+        {
+          "type": "dom",
+          "name": "posts",
+          "xpath": "//table[contains(concat(' ', @class, ' '), ' article')]"
+        }
+      ],
+      "posts": [
+        {
+          "type": "string",
+          "name": "content",
+          "xpath": ".//td[contains(concat(' ', @class, ' '), 'a-content')]"
+        }
+      ]
+    }
+  },
+  "start_urls": [
+    "http://www.newsmth.net/nForum/section/1" 
+  ],
+  "crawler_desp": "水木社区",
+  "crawler_name": "newsmth_crawler"
+}
