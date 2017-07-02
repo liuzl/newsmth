@@ -2,19 +2,36 @@ package main
 
 import (
 	"flag"
+	"github.com/golang/glog"
 	"github.com/gorilla/mux"
-	"log"
 	"net/http"
+	"strconv"
 )
 
 func MyHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Tianjin University!\n"))
+	r.ParseForm()
+	start, _ := strconv.ParseUint(r.FormValue("start"), 10, 32)
+	limit, err := strconv.ParseUint(r.FormValue("limit"), 10, 32)
+	errStr := ""
+	if err != nil {
+		errStr = err.Error()
+	}
+	rv := struct {
+		Start uint64 `json:"start"`
+		Limit uint64 `json:"limit"`
+		Error string `json:"error"`
+	}{
+		Start: start,
+		Limit: limit,
+		Error: errStr,
+	}
+	mustEncode(w, rv)
 }
 
 func main() {
 	flag.Parse()
 	router := mux.NewRouter()
-	router.HandleFunc("/my", MyHandler)
+	router.HandleFunc("/echo", MyHandler)
 	//http.Handle("/", router)
-	log.Fatal(http.ListenAndServe(":8888", router))
+	glog.Fatal(http.ListenAndServe(":8888", router))
 }
